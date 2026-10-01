@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Calculadora de horas de prácticas</title>
+<style>
+:root{--bg:#f3f4f6;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--accent:#2563eb;--work:#dcfce7;--holiday:#fee2e2;--weekend:#f3f4f6;--last:#dbeafe}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:760px;margin:auto;padding:18px 14px 50px}.card{background:var(--card);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px #0000000c}
+h1{font-size:24px;margin:4px 0 6px}.sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+input,button{font:inherit} input[type=date],input[type=number],input[type=text]{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:11px;background:#fff;color:#111827;-webkit-text-fill-color:#111827;opacity:1;font-size:16px;color-scheme:light} input::placeholder{color:#6b7280;-webkit-text-fill-color:#6b7280;opacity:1} input:disabled{color:#4b5563;-webkit-text-fill-color:#4b5563;background:#f3f4f6;opacity:1}
+button{border:0;border-radius:11px;padding:12px 14px;font-weight:750;cursor:pointer}.primary{background:var(--accent);color:#fff;width:100%;margin-top:14px}.secondary{background:#eef2ff;color:#1e40af}
+.result{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#f9fafb;border-radius:12px;padding:12px}.stat b{display:block;font-size:20px}.stat span{font-size:12px;color:var(--muted)}
+.finish{margin-top:14px;padding:14px;border-radius:13px;background:var(--last);font-weight:700}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0}.toolbar h2{font-size:18px;margin:0}.monthnav{display:flex;gap:6px}.monthnav button{padding:7px 10px;background:#f3f4f6}
+.week,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.week div{text-align:center;font-size:11px;color:var(--muted);padding:5px}.day{min-height:57px;border-radius:9px;padding:6px;font-size:12px;background:#fff;border:1px solid var(--line);position:relative}.day.off{background:var(--weekend);color:#9ca3af}.day.holiday{background:var(--holiday);color:#991b1b}.day.work{background:var(--work)}.day.last{outline:3px solid #2563eb}.day.empty{visibility:hidden}.hrs{position:absolute;bottom:4px;right:5px;font-size:10px;font-weight:700}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:10px}.dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:4px}
+.custom-row{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;margin-top:8px}.holiday-list{font-size:13px;margin-top:10px}.holiday-item{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}.x{background:none;color:#b91c1c;padding:2px 7px}
+.note{font-size:12px;color:var(--muted);line-height:1.4;margin-top:10px}
+@media(max-width:520px){
+  main{padding:12px 10px 40px}
+  .card{padding:16px}
+  .grid{grid-template-columns:1fr;gap:14px}
+  .field{min-width:0;width:100%}
+  .field input{display:block;width:100%;min-width:0;height:52px;font-size:18px;padding:12px 14px}
+  .result{grid-template-columns:1fr}
+  .day{min-height:49px;padding:4px}
+  .custom-row{grid-template-columns:1fr}
+  .custom-row button{width:100%}
+}
+
+/* Mobile-first hardening */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+main{width:100%;max-width:680px;margin:0 auto;padding:12px}
+.card{width:100%;max-width:100%;overflow:hidden}
+input,button{max-width:100%}
+.days,.week{width:100%;min-width:0;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.week div{min-width:0;padding:4px 0;font-size:10px}
+.day{min-width:0;width:100%;min-height:46px;padding:4px 2px;border-radius:7px;overflow:hidden;font-size:12px}
+.hrs{font-size:8px;right:2px;bottom:2px}
+@media(max-width:600px){
+  body{font-size:15px}
+  main{padding:8px 7px 32px}
+  .card{border-radius:14px;padding:14px 10px;margin-bottom:10px}
+  h1{font-size:21px;line-height:1.15}
+  .sub{font-size:13px;margin-bottom:14px}
+  .grid{display:block}
+  .field{display:block;width:100%;margin-bottom:12px}
+  .field label{font-size:13px}
+  .field input{box-sizing:border-box;width:100%;height:50px;font-size:17px;padding:10px 12px}
+  .primary{height:50px;font-size:16px}
+  .result{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .stat{padding:10px 8px}
+  .stat b{font-size:18px}
+  .stat span{font-size:10px}
+  .stat:last-child{grid-column:1 / -1}
+  .finish{font-size:14px;line-height:1.4;padding:12px}
+  .toolbar{margin:3px 0 8px}
+  .toolbar h2{font-size:16px}
+  .monthnav button{padding:7px 12px}
+  .week,.days{gap:2px}
+  .day{aspect-ratio:1/1;min-height:0;padding:3px 2px;font-size:11px}
+  .hrs{font-size:7px}
+  .legend{gap:7px;font-size:9px}
+  .custom-row{display:block}
+  .custom-row input,.custom-row button{width:100%;margin-bottom:8px;height:48px}
+}
+@media(max-width:360px){
+  main{padding-left:4px;padding-right:4px}
+  .card{padding-left:7px;padding-right:7px}
+  .day{font-size:10px}
+  .hrs{font-size:6px}
+}
+</style>
+</head>
+<body><main>
+<div class="card">
+<h1>Horas de prácticas / trabajo</h1>
+<p class="sub">Calcula cuándo completas las horas exigidas contando únicamente días laborables.</p>
+<div class="grid">
+ <div class="field"><label>Fecha de inicio</label><input id="start" type="date" value="2026-10-13"></div>
+ <div class="field"><label>Horas al día</label><input id="daily" type="number" value="8" min="0.1" step="0.1"></div>
+ <div class="field"><label>Horas exigidas</label><input id="required" type="number" value="450" min="1" step="0.5"></div>
+ <div class="field"><label>Días de trabajo</label><input value="Lunes a viernes" disabled></div>
+</div>
+<button class="primary" onclick="calculate()">Calcular fecha final</button>
+</div>
+
+<div class="card" id="results">
+<div class="result">
+ <div class="stat"><b id="workdays">—</b><span>días laborales necesarios</span></div>
+ <div class="stat"><b id="fullhours">—</b><span>horas acumuladas</span></div>
+ <div class="stat"><b id="holidaysSkipped">—</b><span>festivos omitidos</span></div>
+</div>
+<div class="finish" id="finish">Introduce las horas y pulsa «Calcular».</div>
+</div>
+
+<div class="card">
+<div class="toolbar"><h2 id="monthTitle">Calendario</h2><div class="monthnav"><button onclick="moveMonth(-1)">‹</button><button onclick="moveMonth(1)">›</button></div></div>
+<div class="week"><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
+<div class="days" id="calendar"></div>
+<div class="legend"><span><i class="dot" style="background:var(--work)"></i>Computa</span><span><i class="dot" style="background:var(--holiday)"></i>Festivo</span><span><i class="dot" style="background:var(--weekend)"></i>Fin de semana</span><span><i class="dot" style="background:var(--last)"></i>Último día</span></div>
+</div>
+
+<div class="card">
+<h2 style="font-size:18px;margin-top:0">Festivos adicionales</h2>
+<p class="sub">Incluye los festivos oficiales de Madrid capital de 2026. Añade aquí días no laborables de tu empresa, vacaciones o festivos futuros.</p>
+<div class="custom-row"><input id="customDate" type="date"><input id="customName" type="text" placeholder="Motivo"><button class="secondary" onclick="addHoliday()">Añadir</button></div>
+<div class="holiday-list" id="holidayList"></div>
+<p class="note">Los festivos oficiales precargados son los de la Comunidad de Madrid y los locales de Madrid capital para 2026. Para 2027 se incluyen los festivos autonómicos publicados a 30/09/2026; añade manualmente los dos festivos locales cuando se publiquen o si tu centro de trabajo está en otro municipio.</p>
+</div>
+</main>
+<script>
+const baseHolidays = {
+"2026-01-01":"Año Nuevo","2026-01-06":"Epifanía","2026-04-02":"Jueves Santo","2026-04-03":"Viernes Santo",
+"2026-05-01":"Fiesta del Trabajo","2026-05-02":"Comunidad de Madrid","2026-08-15":"Asunción","2026-10-12":"Fiesta Nacional",
+"2026-11-02":"Todos los Santos (traslado)","2026-11-09":"Almudena (Madrid capital)","2026-12-07":"Constitución (traslado)",
+"2026-12-08":"Inmaculada","2026-12-25":"Navidad",
+"2027-01-01":"Año Nuevo","2027-01-06":"Epifanía","2027-03-19":"San José","2027-03-25":"Jueves Santo",
+"2027-03-26":"Viernes Santo","2027-05-01":"Fiesta del Trabajo","2027-08-16":"Asunción (traslado)",
+"2027-10-12":"Fiesta Nacional","2027-11-01":"Todos los Santos","2027-12-06":"Constitución","2027-12-08":"Inmaculada","2027-12-25":"Navidad"
+};
+let custom = JSON.parse(localStorage.getItem("customHolidays")||"{}");
+let computed = new Set(), endDate=null, viewDate=new Date(2026,9,1);
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const allHolidays=()=>({...baseHolidays,...custom});
+function isWorkday(d){let n=d.getDay();return n!==0&&n!==6&&!allHolidays()[iso(d)]}
+function calculate(){
+ const s=document.getElementById("start").value, daily=+document.getElementById("daily").value, req=+document.getElementById("required").value;
+ if(!s||daily<=0||req<=0)return alert("Revisa los datos.");
+ let d=new Date(s+"T12:00:00"), total=0, days=0, skipped=0; computed=new Set(); endDate=null;
+ while(total<req){
+   if(isWorkday(d)){computed.add(iso(d));days++;total=Math.min(req,total+daily);endDate=new Date(d)}
+   else if(allHolidays()[iso(d)] && d.getDay()!=0 && d.getDay()!=6) skipped++;
+   d.setDate(d.getDate()+1);
+ }
+ document.getElementById("workdays").textContent=days;
+ document.getElementById("fullhours").textContent=req.toLocaleString("es-ES")+" h";
+ document.getElementById("holidaysSkipped").textContent=skipped;
+ let lastHours=req-daily*(days-1);
+ document.getElementById("finish").innerHTML=`Terminarías el <strong>${endDate.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</strong>.`+(lastHours<daily?` El último día solo necesitarías <strong>${lastHours.toLocaleString("es-ES")} h</strong>.`:"");
+ viewDate=new Date(endDate.getFullYear(),endDate.getMonth(),1); renderCalendar();
+}
+function renderCalendar(){
+ const y=viewDate.getFullYear(),m=viewDate.getMonth(), names=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+ document.getElementById("monthTitle").textContent=names[m][0].toUpperCase()+names[m].slice(1)+" "+y;
+ let first=new Date(y,m,1), offset=(first.getDay()+6)%7, last=new Date(y,m+1,0).getDate(), out="";
+ for(let i=0;i<offset;i++)out+='<div class="day empty"></div>';
+ for(let n=1;n<=last;n++){
+   let d=new Date(y,m,n), key=iso(d), cls="day", label="";
+   if(d.getDay()==0||d.getDay()==6)cls+=" off";
+   if(allHolidays()[key]){cls+=" holiday";label=allHolidays()[key]}
+   if(computed.has(key))cls+=" work";
+   if(endDate&&key===iso(endDate))cls+=" last";
+   out+=`<div class="${cls}" title="${label}">${n}${computed.has(key)?'<span class="hrs">+'+document.getElementById("daily").value+'h</span>':""}</div>`;
+ }
+ document.getElementById("calendar").innerHTML=out;
+}
+function moveMonth(n){viewDate.setMonth(viewDate.getMonth()+n);renderCalendar()}
+function addHoliday(){
+ let d=document.getElementById("customDate").value,n=document.getElementById("customName").value.trim()||"No laborable";
+ if(!d)return; custom[d]=n;localStorage.setItem("customHolidays",JSON.stringify(custom));document.getElementById("customDate").value="";document.getElementById("customName").value="";renderHolidayList();calculate();
+}
+function removeHoliday(d){delete custom[d];localStorage.setItem("customHolidays",JSON.stringify(custom));renderHolidayList();calculate()}
+function renderHolidayList(){
+ let e=document.getElementById("holidayList"),keys=Object.keys(custom).sort();
+ e.innerHTML=keys.length?keys.map(k=>`<div class="holiday-item"><span>${new Date(k+"T12:00").toLocaleDateString("es-ES")} — ${custom[k]}</span><button class="x" onclick="removeHoliday('${k}')">×</button></div>`).join(""):"<span style='color:#9ca3af'>No has añadido días adicionales.</span>";
+}
+renderHolidayList();calculate();
+</script></body></html>
